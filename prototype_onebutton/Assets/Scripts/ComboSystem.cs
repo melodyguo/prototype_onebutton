@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class ComboSystem : MonoBehaviour
@@ -27,6 +28,13 @@ public class ComboSystem : MonoBehaviour
     [SerializeField] private ComboSpawner comboSpawner;
     [SerializeField] private CameraManager cameraManager;
     private int comboCount = 0;
+    
+    [Header("SFX")]
+    [SerializeField] private AudioSource shortJumpSFX;
+    [SerializeField] private AudioSource longJumpSFX;
+    [SerializeField] private AudioSource shortComboSFX;
+    [SerializeField] private AudioSource longComboSFX;
+    [SerializeField] private AudioSource comboSuccessSFX;
 
     [Header("Temp Score Stuff")]
     public int playerScore = 0;
@@ -35,6 +43,12 @@ public class ComboSystem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        
         if (comboCount > 0)
         {
             scoreText.text = playerScore.ToString() + " + " + comboCount.ToString();
@@ -88,6 +102,10 @@ public class ComboSystem : MonoBehaviour
         {
             canCombo = false;
             playerScore += comboCount;
+            if (comboCount > 0)
+            {
+                comboSuccessSFX.Play();
+            }
             comboCount = 0;
             comboSpawner.StopSpawning();
             cameraManager.SetCameraToDefault();
@@ -130,6 +148,7 @@ public class ComboSystem : MonoBehaviour
         onGround = false;
 
         playerAnimator.SetTrigger("Jump");
+        shortJumpSFX.Play();
         playerRigidbody.AddForce(Vector3.up * shortJumpForce, ForceMode.Impulse);
     }
 
@@ -139,12 +158,14 @@ public class ComboSystem : MonoBehaviour
         canCombo = true;
 
         playerAnimator.SetTrigger("Jump");
+        longJumpSFX.Play();
         playerRigidbody.AddForce(Vector3.up * longJumpForce, ForceMode.Impulse);
     }
 
     private void PlayComboShort()
     {
         playerAnimator.SetTrigger("Tap");
+        shortComboSFX.Play();
         playerRigidbody.AddForce(Vector3.up * comboJumpForce, ForceMode.Impulse);
         
         /*var go = Instantiate(comboSplashPrefab, transform);
@@ -157,6 +178,7 @@ public class ComboSystem : MonoBehaviour
     private void PlayComboLong()
     {
         playerAnimator.SetTrigger("Hold");
+        longComboSFX.Play();
         playerRigidbody.AddForce(Vector3.up * comboJumpForce * 2.0f, ForceMode.Impulse);
         
         /*var go = Instantiate(comboSplashLongPrefab, transform);
