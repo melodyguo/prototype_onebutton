@@ -26,7 +26,6 @@ public class ComboSystem : MonoBehaviour
     [SerializeField] private GameObject comboSplashPrefab;
     [SerializeField] private GameObject comboSplashLongPrefab;
     [SerializeField] private ComboSpawner comboSpawner;
-    [SerializeField] private CameraManager cameraManager;
     private int comboCount = 0;
     
     [Header("SFX")]
@@ -35,10 +34,14 @@ public class ComboSystem : MonoBehaviour
     [SerializeField] private AudioSource shortComboSFX;
     [SerializeField] private AudioSource longComboSFX;
     [SerializeField] private AudioSource comboSuccessSFX;
+    [SerializeField] private AudioSource deathSFX;
+    [SerializeField] private AudioSource bgm;
 
-    [Header("Temp Score Stuff")]
+    [Header("Score & Death")]
     public int playerScore = 0;
     [SerializeField] private TMP_Text scoreText;
+    public bool isDead = false;
+    [SerializeField] private GameObject deathScreen;
 
     // Update is called once per frame
     void Update()
@@ -48,14 +51,19 @@ public class ComboSystem : MonoBehaviour
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
+
+        if (isDead)
+        {
+            return;
+        }
         
         if (comboCount > 0)
         {
-            scoreText.text = playerScore.ToString() + " + " + comboCount.ToString();
+            scoreText.text = "Score: " + playerScore.ToString() + " + " + comboCount.ToString();
         }
         else
         {
-            scoreText.text = playerScore.ToString();
+            scoreText.text = "Score: " + playerScore.ToString();
         }
         float currentTime = Time.time;
         
@@ -108,7 +116,6 @@ public class ComboSystem : MonoBehaviour
             }
             comboCount = 0;
             comboSpawner.StopSpawning();
-            cameraManager.SetCameraToDefault();
             
             // Check for space pressed
             if (Input.GetKeyDown(KeyCode.Space))
@@ -140,6 +147,11 @@ public class ComboSystem : MonoBehaviour
         if (other.gameObject.tag == "Ground")
         {
             onGround = true;
+        }
+
+        if (other.gameObject.tag == "Rope" && !isDead)
+        {
+            Die();
         }
     }
 
@@ -198,5 +210,15 @@ public class ComboSystem : MonoBehaviour
         Destroy(go, 0.2f);*/
 
         comboCount += 2;
+    }
+
+    private void Die()
+    {
+        isDead = true;
+        playerAnimator.SetTrigger("Death");
+        deathScreen.SetActive(true);
+        bgm.Stop();
+        deathSFX.Play();
+        scoreText.text = "Score: " + playerScore.ToString();
     }
 }

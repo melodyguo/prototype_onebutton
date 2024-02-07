@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ground
   - Activator
+  - Rope
   layers:
   - Default
   - TransparentFX
